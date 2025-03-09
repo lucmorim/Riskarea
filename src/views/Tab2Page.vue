@@ -23,6 +23,7 @@ const { logs, addLog } = useLog();
 
 // Teste para garantir que os logs funcionam
 addLog("🛠️ Log de inicialização da Tab2 carregado!");
+addLog("🛠️ ----------!");
 </script>
 
 <style scoped>

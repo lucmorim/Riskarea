@@ -25,19 +25,23 @@ import Toast from "@/components/Toast.vue";
 
 const map = ref<L.Map>();
 const carregando = ref(true);
-const toastRef = ref<any>(null);
+const toastRef = ref<any>();
 const userMarker = ref<L.Marker>();
 const polygonsLayer = ref<L.LayerGroup>();
+const ultimaPosicao = ref<{ lat: number; lng: number }>({ lat: 0, lng: 0 });
+const ultimaRequisicao = ref<{ lat: number; lng: number }>({ lat: 0, lng: 0 });
+const polygonsCarregados = ref<Set<string>>(new Set()); // Evita carregamento repetido
 
 const { latitude, longitude, startWatching } = useGeolocation();
 
 onMounted(async () => {
+  console.log("RiskArea");
   await nextTick();
   await startWatching();
   await inicializarMapa();
 });
 
-// ✅ Função para inicializar o mapa
+// ✅ Inicializa o mapa
 function inicializarMapa() {
   const mapElement = document.getElementById("map");
   if (!mapElement) {
@@ -48,26 +52,30 @@ function inicializarMapa() {
   if (!map.value) {
     console.log("✅ Criando mapa...");
     map.value = L.map("map", {
-      center: [-22.9068, -43.1729], // 📌 Posição inicial no Rio de Janeiro
-      zoom: 13
+      center: [-22.9068, -43.1729]
     });
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors"
     }).addTo(map.value);
 
-    // Camada para armazenar os polígonos
     polygonsLayer.value = L.layerGroup().addTo(map.value);
   } else {
     console.log("⚠️ Mapa já estava inicializado!");
   }
 }
 
-// ✅ Atualiza a posição do usuário e adiciona o marcador
+// ✅ Atualiza a posição do usuário e adiciona o marcador **(Evita loop)**
 watch([latitude, longitude], async ([lat, lng]) => {
-  console.log('fazendo')
-  if (lat !== null && lng !== null && map.value) {
+  if (lat && lng && map.value) {
     console.log(`📍 Atualizando posição: ${lat}, ${lng}`);
+
+    if (ultimaPosicao.value.lat === lat && ultimaPosicao.value.lng === lng) {
+      console.log("⏭️ Ignorando atualização repetida...");
+      return;
+    }
+
+    ultimaPosicao.value = { lat, lng };
     carregando.value = false;
 
     map.value.setView([lat, lng], 15);
@@ -86,7 +94,7 @@ watch([latitude, longitude], async ([lat, lng]) => {
       .bindPopup("📍 Você está aqui")
       .openPopup();
 
-    // 🚀 Buscar e exibir polígonos
+    // 🚀 Buscar e exibir polígonos **(Evita requisições repetidas)**
     await carregarPoligonos(lat, lng);
   }
 });
@@ -94,16 +102,24 @@ watch([latitude, longitude], async ([lat, lng]) => {
 // ✅ Função para buscar e exibir polígonos no mapa
 async function carregarPoligonos(latitude: number, longitude: number) {
   try {
+    // 🛑 Evita requisições se a posição mudou pouco (menos de 100m)
+    const distancia = calcularDistancia(ultimaRequisicao.value.lat, ultimaRequisicao.value.lng, latitude, longitude);
+    if (distancia < 0.1) {
+      console.log(`⏭️ Ignorando carregamento de polígonos - distância de apenas ${distancia.toFixed(3)} km.`);
+      return;
+    }
+    ultimaRequisicao.value = { lat: latitude, lng: longitude };
+
     const response = await usePostRequest("/get-polygons", { latitude, longitude });
 
     if (!response?.polygons || response.polygons.length === 0) {
-      toastRef.value.mostrarToast("⚠️ Nenhum polígono encontrado!", "warning");
+      toastRef.value?.mostrarToast?.("⚠️ Nenhum polígono encontrado!", "warning");
       return;
     }
 
-    toastRef.value.mostrarToast(`📌 ${response.polygons.length} polígonos carregados!`, "success");
+    toastRef.value?.mostrarToast?.(`📌 ${response.polygons.length} polígonos carregados!`, "success");
 
-    // Limpar camada anterior de polígonos
+    // Limpa camada anterior de polígonos
     if (polygonsLayer.value) {
       polygonsLayer.value.clearLayers();
     }
@@ -111,7 +127,13 @@ async function carregarPoligonos(latitude: number, longitude: number) {
     let boundsArray: L.LatLngExpression[] = [];
 
     response.polygons.forEach((area: any) => {
+      if (polygonsCarregados.value.has(area.id)) {
+        console.log(`⏭️ Polígono ${area.nome} já carregado, ignorando...`);
+        return;
+      }
+
       console.log("Adicionando área:", area.nome);
+      polygonsCarregados.value.add(area.id);
 
       const coordenadasConvertidas: [number, number][] = area.geometria.coordinates[0].map(
         ([lng, lat]: [number, number]) => [lat, lng]
@@ -132,8 +154,21 @@ async function carregarPoligonos(latitude: number, longitude: number) {
     }
   } catch (error) {
     console.error("❌ Erro ao buscar polígonos:", error);
-    toastRef.value.mostrarToast("❌ Erro ao carregar polígonos!", "danger");
+    toastRef.value?.mostrarToast?.("❌ Erro ao carregar polígonos!", "danger");
   }
+}
+
+// ✅ Função para calcular distância entre dois pontos (Haversine Formula)
+function calcularDistancia(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLng = (lng2 - lng1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distância em km
 }
 </script>
 
