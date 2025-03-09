@@ -2,22 +2,31 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Tab 2</ion-title>
+        <ion-title>Logs</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Tab 2</ion-title>
-        </ion-toolbar>
-      </ion-header>
 
-      <ExploreContainer name="Tab 2 page" />
+    <ion-content>
+      <ion-list>
+        <ion-item v-for="(log, index) in logs" :key="index">
+          {{ log }}
+        </ion-item>
+      </ion-list>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue';
-import ExploreContainer from '@/components/ExploreContainer.vue';
+import { useLog } from "@/composables/useLog";
+
+const { logs, addLog } = useLog();
+
+// Teste para garantir que os logs funcionam
+addLog("🛠️ Log de inicialização da Tab2 carregado!");
 </script>
+
+<style scoped>
+ion-item {
+  font-size: 0.9rem;
+}
+</style>

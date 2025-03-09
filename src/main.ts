@@ -20,6 +20,9 @@ import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
 
+/* Mapa */
+import "leaflet/dist/leaflet.css";
+
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
