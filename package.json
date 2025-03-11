@@ -10,7 +10,7 @@
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint .",
-    "xx": "npm run build &&  npx cap copy android"
+    "xx": "npm run build &&  npx cap copy android && npx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.1",

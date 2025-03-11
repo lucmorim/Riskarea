@@ -1,11 +1,12 @@
 import { ref, watch } from "vue";
 import { usePostRequest } from "@/composables/useApi";
 import { useGeolocation } from "@/composables/useGeolocation";
-import { sendNotification } from "@/composables/useNotification";
+import { useNotification } from "@/composables/useNotification";
+
+const { sendNotification } = useNotification();
 
 const emRisco = ref(false);
-const areasAtuais = ref<string[]>([]);
-const ultimaAreaNotificada = ref<string | null>(null);
+const ultimaMensagem = ref<string>(""); // Para evitar repetição de alerta
 const { latitude, longitude, startWatching } = useGeolocation();
 
 export function useRiskWatcher() {
@@ -18,32 +19,24 @@ export function useRiskWatcher() {
         longitude: longitude.value,
       });
 
-      if (!response?.alert || response.areas.length === 0) {
-        emRisco.value = false;
-        areasAtuais.value = [];
-        return;
-      }
-
-      // 🔥 Obtém o nome da área de risco
-      const novasAreas = response.areas.map((area: any) => area.name);
-
-      // 🚨 Notificar apenas se for uma nova área de risco
-      if (novasAreas.toString() !== areasAtuais.value.toString()) {
-        areasAtuais.value = novasAreas;
-        emRisco.value = true;
-
-        // 🔥 Dispara notificação apenas se for uma nova área e ainda não foi notificada
-        if (ultimaAreaNotificada.value !== novasAreas.join(", ")) {
-          sendNotification(novasAreas.join(", "));
-          ultimaAreaNotificada.value = novasAreas.join(", ");
+      if (response?.alert) {
+        const mensagem = response.menssage || "Área de risco detectada!";
+        
+        if (mensagem !== ultimaMensagem.value) {
+          sendNotification(`⚠️ ${mensagem}`);
+          ultimaMensagem.value = mensagem;
         }
+        
+        emRisco.value = true;
+      } else {
+        emRisco.value = false;
       }
+    
     } catch (error) {
       console.error("❌ Erro ao verificar risco:", error);
     }
   }
 
-  // 🔥 Monitora a localização e verifica riscos
   watch([latitude, longitude], () => {
     verificarRisco();
   });
