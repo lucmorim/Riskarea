@@ -31,12 +31,14 @@ const userMarker = ref<L.Marker>();
 const polygonsLayer = ref<L.LayerGroup>(); // Camada para polígonos
 const ultimaAreaNotificada = ref<string>(""); // Evita notificações repetidas
 
-const { sendNotification, requestPermissions } = useNotification();
+const { sendNotification, requestPermissions, createNotificationChannel } = useNotification();
 const { latitude, longitude, startWatching } = useGeolocation();
 
 onMounted(async () => {
   console.log("📍 Iniciando Mapa...");
   await nextTick();
+  await createNotificationChannel(); // 🔥 Criar canal de notificações
+  await requestPermissions();        // 🔥 Solicitar permissões do usuário
   await requestPermissions(); // Solicita permissões de notificação
   await startWatching(); // Inicia a geolocalização
   inicializarMapa();
