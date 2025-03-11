@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, onActivated } from "vue";
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from "@ionic/vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -24,23 +24,34 @@ import { usePostRequest } from "@/composables/useApi";
 import { useNotification } from "@/composables/useNotification";
 import Toast from "@/components/Toast.vue";
 
-const map = ref<L.Map>(); // Referência para o mapa
+const map = ref<L.Map>(); // Mapa
 const carregando = ref(true);
 const toastRef = ref<any>();
 const userMarker = ref<L.Marker>();
 const polygonsLayer = ref<L.LayerGroup>(); // Camada para polígonos
-const ultimaAreaNotificada = ref<string>(""); // Evita notificações repetidas
+const ultimaAreaNotificada = ref<string>("");
 
 const { sendNotification, requestPermissions, createNotificationChannel } = useNotification();
 const { latitude, longitude, startWatching } = useGeolocation();
 
 onMounted(async () => {
   console.log("📍 Iniciando Mapa...");
-  await nextTick();
-  await createNotificationChannel(); // 🔥 Criar canal de notificações
-  await requestPermissions();        // 🔥 Solicitar permissões do usuário
-  await requestPermissions(); // Solicita permissões de notificação
-  await startWatching(); // Inicia a geolocalização
+  await requestPermissions();
+  await createNotificationChannel();
+  await startWatching();
+  inicializarMapa();
+});
+
+// 🚀 Quando ativar a aba do mapa, reinicializa ele e centraliza na posição atual
+onActivated(() => {
+  console.log("🟢 Aba do mapa ativada");
+
+  if (map.value) {
+    console.log("♻️ Reinicializando mapa...");
+    map.value.remove(); // Remove o mapa antigo
+    map.value = undefined; // Limpa a referência
+  }
+
   inicializarMapa();
 });
 
@@ -59,27 +70,29 @@ function inicializarMapa() {
     return;
   }
 
-  if (!map.value) {
-    console.log("✅ Criando novo mapa...");
-    map.value = L.map("map", {
-      center: [-22.9068, -43.1729], // 📍 Rio de Janeiro como padrão
-      zoom: 13,
-    });
+  console.log("✅ Criando novo mapa...");
+  map.value = L.map("map", {
+    center: [-22.9068, -43.1729], // 📍 Posição padrão
+    zoom: 13,
+  });
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-    }).addTo(map.value);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors",
+  }).addTo(map.value);
 
-    polygonsLayer.value = L.layerGroup().addTo(map.value);
+  polygonsLayer.value = L.layerGroup().addTo(map.value);
+
+  // Se já temos uma localização válida, move o mapa para lá
+  if (latitude.value && longitude.value) {
+    map.value.setView([latitude.value, longitude.value], 15);
+    adicionarMarcador(latitude.value, longitude.value);
+    carregarPoligonos(latitude.value, longitude.value);
   }
 }
 
-// ✅ Atualiza a posição do usuário e adiciona o marcador
-watch([latitude, longitude], async ([lat, lng]) => {
-  if (!lat || !lng || !map.value) return;
-
-  carregando.value = false;
-  map.value.setView([lat, lng], 15);
+// ✅ Adiciona o marcador da localização do usuário
+function adicionarMarcador(lat: number, lng: number) {
+  if (!map.value) return;
 
   if (userMarker.value) {
     userMarker.value.setLatLng([lat, lng]);
@@ -94,7 +107,17 @@ watch([latitude, longitude], async ([lat, lng]) => {
       .bindPopup("📍 Você está aqui")
       .openPopup();
   }
+}
 
+// ✅ Atualiza a posição do usuário e adiciona o marcador
+watch([latitude, longitude], async ([lat, lng]) => {
+  if (!lat || !lng || !map.value) return;
+
+  console.log(`📍 Atualizando posição: ${lat}, ${lng}`);
+  carregando.value = false;
+
+  map.value.setView([lat, lng], 15);
+  adicionarMarcador(lat, lng);
   await verificarRisco(lat, lng);
 });
 
