@@ -1,11 +1,12 @@
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { ref } from "vue";
 
-const notificacoesEnviadas = ref(new Set<number>()); // Evita notificações repetidas
+const notificacaoAtiva = ref(false); // Indica se um alarme está ativo
+const ultimaAreaAlarmada = ref<string | null>(null); // Salva a última área alarmada
+let intervalId: NodeJS.Timeout | null = null; // ID do loop de alarmes
 
 export function useNotification() {
   
-  // ✅ Solicita permissão para notificações
   async function requestPermissions() {
     try {
       const status = await LocalNotifications.requestPermissions();
@@ -16,15 +17,14 @@ export function useNotification() {
     }
   }
 
-  // ✅ Criação do canal de notificações (importante no Android)
   async function createNotificationChannel() {
     try {
       await LocalNotifications.createChannel({
         id: "alerta",
         name: "Alertas de Risco",
         description: "Canal para alertas de risco próximos",
-        importance: 5, // IMPORTANCE_HIGH para exibir imediatamente
-        visibility: 1, // PUBLIC
+        importance: 5,
+        visibility: 1,
         sound: "default",
       });
       console.log("✅ Canal de notificações criado!");
@@ -33,37 +33,64 @@ export function useNotification() {
     }
   }
 
-  // ✅ Dispara uma notificação local
-  async function sendNotification(message: string) {
+  function listenNotificationEvents() {
+    LocalNotifications.addListener("localNotificationActionPerformed", async (action) => {
+      console.log("📲 Notificação clicada:", action);
+      notificacaoAtiva.value = false; // Para novos alarmes
+      ultimaAreaAlarmada.value = null; // Permite alarmes futuros
+      if (intervalId) {
+        clearInterval(intervalId); // Para o loop de notificações
+        intervalId = null;
+      }
+    });
+  }
+
+  async function sendNotification(area: string) {
     try {
       if (!(await requestPermissions())) {
         console.warn("⚠️ Notificações não permitidas pelo usuário.");
         return;
       }
 
-      const idNotificacao = Math.floor(Math.random() * 1000);
-
-      if (notificacoesEnviadas.value.has(idNotificacao)) {
-        console.warn("⏭️ Notificação já enviada recentemente, ignorando...");
+      if (notificacaoAtiva.value && ultimaAreaAlarmada.value === area) {
+        console.log("⏭️ Alarme já ativo para esta área, aguardando clique...");
         return;
       }
 
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            id: idNotificacao,
-            title: "⚠️ ALERTA DE RISCO!",
-            body: `🚨 ${message}`,
-            schedule: { at: new Date(Date.now() + 1000) },
-            channelId: "alerta",
-            sound: "default",
-            smallIcon: "ic_stat_icon",
-          },
-        ],
-      });
+      notificacaoAtiva.value = true;
+      ultimaAreaAlarmada.value = area;
 
-      notificacoesEnviadas.value.add(idNotificacao);
-      console.log("✅ Notificação enviada!");
+      async function agendarNotificacao() {
+        const idNotificacao = Math.floor(Math.random() * 1000);
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              id: idNotificacao,
+              title: "⚠️ ALERTA DE ATENÇÃO!",
+              body: `🚨 Atenção! Você está próximo de: ${area}`,
+              schedule: { at: new Date(Date.now() + 500) }, // Notificação instantânea
+              channelId: "alerta",
+              sound: "default",
+              smallIcon: "ic_stat_icon",
+              actionTypeId: "clique_alerta",
+            },
+          ],
+        });
+        console.log(`✅ Notificação enviada para ${area}`);
+      }
+
+      await agendarNotificacao();
+
+      // 🔥 Continua enviando notificações a cada 5 segundos até que o usuário clique
+      intervalId = setInterval(async () => {
+        if (!notificacaoAtiva.value) {
+          clearInterval(intervalId!);
+          intervalId = null;
+          return;
+        }
+        await agendarNotificacao();
+      }, 25000);
+
     } catch (error) {
       console.error(`❌ Erro ao enviar notificação: ${error}`);
     }
@@ -72,6 +99,7 @@ export function useNotification() {
   return {
     requestPermissions,
     createNotificationChannel,
+    listenNotificationEvents,
     sendNotification,
   };
 }

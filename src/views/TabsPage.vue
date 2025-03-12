@@ -8,9 +8,9 @@
           <ion-label>Mapa</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="tab2" href="/tabs/tab2">
-          <ion-icon aria-hidden="true" :icon="ellipse" />
-          <ion-label>Tab 2</ion-label>
+        <ion-tab-button tab="tab2" href="/tabs/news">
+          <ion-icon aria-hidden="true" :icon="newspaper" />
+          <ion-label>News</ion-label>
         </ion-tab-button>
 
         <!-- <ion-tab-button tab="tab3" href="/tabs/tab3">
@@ -24,5 +24,5 @@
 
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { ellipse, map} from 'ionicons/icons';
+import { newspaper, map} from 'ionicons/icons';
 </script>

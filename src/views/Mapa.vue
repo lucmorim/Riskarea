@@ -1,10 +1,10 @@
 <template>
   <ion-page>
-    <ion-header>
+    <!-- <ion-header>
       <ion-toolbar>
         <ion-title>Mapa</ion-title>
       </ion-toolbar>
-    </ion-header>
+    </ion-header> -->
 
     <ion-content :fullscreen="true">
       <Toast ref="toastRef" />
@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, onActivated } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, onActivated, nextTick } from "vue";
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from "@ionic/vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -31,28 +31,34 @@ const userMarker = ref<L.Marker>();
 const polygonsLayer = ref<L.LayerGroup>(); // Camada para polígonos
 const ultimaAreaNotificada = ref<string>("");
 
-const { sendNotification, requestPermissions, createNotificationChannel } = useNotification();
+const { sendNotification, requestPermissions, createNotificationChannel, listenNotificationEvents } = useNotification();
 const { latitude, longitude, startWatching } = useGeolocation();
 
 onMounted(async () => {
   console.log("📍 Iniciando Mapa...");
-  await requestPermissions();
+  await nextTick();
   await createNotificationChannel();
+  await requestPermissions();
+  await listenNotificationEvents(); // 🔥 Adicionando ouvintes
   await startWatching();
-  inicializarMapa();
+  setTimeout(() => {
+    inicializarMapa();
+  }, 500); 
 });
 
-// 🚀 Quando ativar a aba do mapa, reinicializa ele e centraliza na posição atual
 onActivated(() => {
   console.log("🟢 Aba do mapa ativada");
-
-  if (map.value) {
-    console.log("♻️ Reinicializando mapa...");
-    map.value.remove(); // Remove o mapa antigo
-    map.value = undefined; // Limpa a referência
-  }
-
-  inicializarMapa();
+  setTimeout(() => {
+    if (!map.value) {
+      console.log("🔄 Reinicializando mapa...");
+      inicializarMapa();
+    } else {
+      // Atualiza a posição atual para garantir que o usuário seja centralizado corretamente
+      if (latitude.value && longitude.value) {
+        map.value.setView([latitude.value, longitude.value], 15);
+      }
+    }
+  }, 300);
 });
 
 // 🚀 Remove o mapa da DOM ao sair da aba para evitar problemas

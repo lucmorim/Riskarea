@@ -1,45 +1,66 @@
-import { ref, watch } from "vue";
-import { usePostRequest } from "@/composables/useApi";
-import { useGeolocation } from "@/composables/useGeolocation";
-import { useNotification } from "@/composables/useNotification";
+import { LocalNotifications } from "@capacitor/local-notifications";
 
-const { sendNotification } = useNotification();
-
-const emRisco = ref(false);
-const ultimaMensagem = ref<string>(""); // Para evitar repetição de alerta
-const { latitude, longitude, startWatching } = useGeolocation();
-
-export function useRiskWatcher() {
-  async function verificarRisco() {
-    if (!latitude.value || !longitude.value) return;
-
+export function useNotification() {
+  
+  async function requestPermissions() {
     try {
-      const response = await usePostRequest("/check-risk-area", {
-        latitude: latitude.value,
-        longitude: longitude.value,
-      });
-
-      if (response?.alert) {
-        const mensagem = response.menssage || "Área de risco detectada!";
-        
-        if (mensagem !== ultimaMensagem.value) {
-          sendNotification(`⚠️ ${mensagem}`);
-          ultimaMensagem.value = mensagem;
-        }
-        
-        emRisco.value = true;
-      } else {
-        emRisco.value = false;
-      }
-    
+      const status = await LocalNotifications.requestPermissions();
+      return status.display === "granted"; 
     } catch (error) {
-      console.error("❌ Erro ao verificar risco:", error);
+      console.error(`❌ Erro ao solicitar permissões: ${error}`);
+      return false;
     }
   }
 
-  watch([latitude, longitude], () => {
-    verificarRisco();
-  });
+  async function createNotificationChannel() {
+    try {
+      await LocalNotifications.createChannel({
+        id: "alerta",
+        name: "Alertas de Risco",
+        description: "Canal para alertas de risco contínuos",
+        importance: 5, // IMPORTANCE_HIGH
+        visibility: 1, // PUBLIC
+        sound: "default",
+      });
+      console.log("✅ Canal de notificações criado!");
+    } catch (error) {
+      console.error(`❌ Erro ao criar canal: ${error}`);
+    }
+  }
 
-  return { emRisco, startWatching };
+  async function sendNotification(message: string) {
+    try {
+      if (!(await requestPermissions())) {
+        console.warn("⚠️ Notificações não permitidas pelo usuário.");
+        return;
+      }
+
+      const idNotificacao = Math.floor(Math.random() * 1000); // 🔥 Garante um número menor para Android
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: idNotificacao, // Agora é um número pequeno e válido
+            title: "⚠️ ALERTA DE ATENÇÃO!",
+            body: `🚨 ${message}`,
+            schedule: { at: new Date(Date.now() + 1000) },
+            channelId: "alerta",
+            sound: "default",
+            smallIcon: "ic_stat_icon",
+            actionTypeId: "clique_alerta", // Para detectar cliques
+          },
+        ],
+      });
+
+      console.log("✅ Notificação enviada!");
+    } catch (error) {
+      console.error(`❌ Erro ao enviar notificação: ${error}`);
+    }
+  }
+
+  return {
+    requestPermissions,
+    createNotificationChannel,
+    sendNotification,
+  };
 }
