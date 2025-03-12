@@ -8,10 +8,10 @@
           <ion-label>Mapa</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="tab2" href="/tabs/news">
+        <!-- <ion-tab-button tab="tab2" href="/tabs/news">
           <ion-icon aria-hidden="true" :icon="newspaper" />
           <ion-label>News</ion-label>
-        </ion-tab-button>
+        </ion-tab-button> -->
 
         <!-- <ion-tab-button tab="tab3" href="/tabs/tab3">
           <ion-icon aria-hidden="true" :icon="square" />
