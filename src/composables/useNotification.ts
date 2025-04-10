@@ -89,7 +89,7 @@ export function useNotification() {
           return;
         }
         await agendarNotificacao();
-      }, 25000);
+      }, 60000);
 
     } catch (error) {
       console.error(`❌ Erro ao enviar notificação: ${error}`);

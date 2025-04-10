@@ -22,6 +22,7 @@ import "leaflet/dist/leaflet.css";
 import { useGeolocation } from "@/composables/useGeolocation";
 import { usePostRequest } from "@/composables/useApi";
 import { useNotification } from "@/composables/useNotification";
+import { ForegroundService } from '@capawesome-team/capacitor-android-foreground-service';
 import Toast from "@/components/Toast.vue";
 
 const map = ref<L.Map>(); // Mapa
@@ -34,8 +35,56 @@ const ultimaAreaNotificada = ref<string>("");
 const { sendNotification, requestPermissions, createNotificationChannel, listenNotificationEvents } = useNotification();
 const { latitude, longitude, startWatching } = useGeolocation();
 
+const startForegroundService =  async () => {
+  console.log("foreground")
+  await ForegroundService.startForegroundService({
+    id: 1,
+    title: 'Riskarea',
+    body: 'Body',
+    smallIcon: 'ic_stat_icon_config_sample',
+    buttons: [
+      {
+        title: 'Button 1',
+        id: 1
+      }
+    ],
+    silent: false,
+    notificationChannelId: 'default',
+  })
+}
+
+// const updateForegroundService = async () => {
+//   await ForegroundService.updateForegroundService({
+//     id: 1,
+//     title: 'Title',
+//     body: 'Body',
+//     smallIcon: 'ic_stat_icon_config_sample',
+//   });
+// };
+
+// const stopForegroundService = async () => {
+//   await ForegroundService.stopForegroundService();
+// };
+
+
+// const deleteNotificationChannel = async () => {
+//   await ForegroundService.deleteNotificationChannel({
+//     id: 'default',
+//   });
+// };
+
+const createNotificationChannel2 = async () => {
+  await ForegroundService.createNotificationChannel({
+    id: 'default',
+    name: 'Default',
+    description: 'Default channel',
+    importance: 1,
+  });
+};
+
 onMounted(async () => {
   console.log("📍 Iniciando Mapa...");
+  await createNotificationChannel2
   await nextTick();
   await createNotificationChannel();
   await requestPermissions();
@@ -44,6 +93,7 @@ onMounted(async () => {
   setTimeout(() => {
     inicializarMapa();
   }, 500); 
+  startForegroundService();
 });
 
 onActivated(() => {
