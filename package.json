@@ -13,6 +13,7 @@
     "xx": "npm run build &&  npx cap copy android && npx cap open android"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^7.0.2",
     "@capacitor/android": "^7.0.1",
     "@capacitor/app": "7.0.0",
     "@capacitor/background-runner": "^2.1.0",
@@ -22,6 +23,7 @@
     "@capacitor/haptics": "7.0.0",
     "@capacitor/keyboard": "7.0.0",
     "@capacitor/local-notifications": "^7.0.0",
+    "@capacitor/preferences": "^7.0.1",
     "@capacitor/status-bar": "7.0.0",
     "@capawesome-team/capacitor-android-foreground-service": "^7.0.1",
     "@ionic/vue": "^8.0.0",
