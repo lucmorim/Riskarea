@@ -6,7 +6,7 @@ import { Preferences } from '@capacitor/preferences';
 
 // Configurações
 const AD_INTERVAL = 30 * 60 * 1000; // 30 minutos entre anúncios
-const NOTIFICATION_INTERVAL = 30000; // 30 segundos entre notificações
+const NOTIFICATION_INTERVAL = 20000; // 20 segundos entre notificações
 
 // Estado reativo
 const notificacaoAtiva = ref(false);
@@ -74,7 +74,7 @@ export function useNotification() {
           notifications: [{
             id: Math.floor(Math.random() * 1000),
             title: "⚠️ ALERTA DE ATENÇÃO!",
-            body: `🚨 Atenção! Você está próximo de: ${area}`,
+            body: `${area}`,
             schedule: { at: new Date(Date.now() + 500) },
             channelId: "alerta",
             sound: "default",
