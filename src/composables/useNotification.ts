@@ -17,8 +17,21 @@ export function useNotification() {
   // -- Funções de Notificação --
   async function requestPermissions() {
     try {
+      const currentStatus = await LocalNotifications.checkPermissions();
+  
+      if (currentStatus.display === "granted") {
+        return true;
+      }
+  
       const status = await LocalNotifications.requestPermissions();
-      return status.display === "granted";
+  
+      if (status.display === "granted") {
+        setTimeout(() => location.reload(), 500);
+        return true;
+      } else {
+        return false;
+      }
+  
     } catch (error) {
       console.error(`Erro ao solicitar permissões: ${error}`);
       return false;
@@ -85,14 +98,6 @@ export function useNotification() {
       };
 
       await agendarNotificacao();
-
-      intervalId = setInterval(async () => {
-        if (!notificacaoAtiva.value) {
-          stopNotifications();
-          return;
-        }
-        await agendarNotificacao();
-      }, NOTIFICATION_INTERVAL);
 
     } catch (error) {
       console.error(`Erro ao enviar notificação: ${error}`);

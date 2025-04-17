@@ -8,6 +8,7 @@
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { useNotification } from '@/composables/useNotification';
+import { useRiskWatcher } from '@/composables/useRiskWatcher';
 
 const { 
   initializeAdMob, 
@@ -17,10 +18,15 @@ const {
 } = useNotification();
 
 const adInterval = ref<NodeJS.Timeout>();
+const { requestPermissions } = useNotification();
+const { startWatching } = useRiskWatcher();
 
 onMounted(async () => { 
   await initializeAdMob();
+  await requestPermissions();
   await setupForegroundService();
+
+  startWatching();
   
   adInterval.value = setInterval(showInterstitial, AD_INTERVAL);
   

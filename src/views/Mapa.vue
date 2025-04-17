@@ -21,28 +21,11 @@ import Toast from "@/components/Toast.vue";
 // Variáveis reativas
 const carregando = ref(true);
 const toastRef = ref<any>();
-const ultimaAreaNotificada = ref<string>("");
 
 // Composables
-const { sendNotification, requestPermissions, createNotificationChannel } = useNotification();
-const { latitude, longitude, startWatching, error, isActive, stopWatching } = useGeolocation();
+const { createNotificationChannel } = useNotification();
+const { latitude, longitude, startWatching, stopWatching } = useGeolocation();
 const { initializeMap, updatePosition, clearMap, polygonsLayer } = useMap();
-
-// Verifica áreas de risco
-const verificarRisco = async (lat: number, lng: number) => {
-  try {
-    const response = await usePostRequest("/check-risk-area", { latitude: lat, longitude: lng });
-    
-    if (response?.alert && ultimaAreaNotificada.value !== response.menssage) {
-      const mensagem = response.menssage || "Área de risco detectada!";
-      sendNotification(`🚨 Atenção! ${mensagem}`);
-      ultimaAreaNotificada.value = mensagem;
-      carregarPoligonos(lat, lng);
-    }
-  } catch (error) {
-    console.error("Erro ao verificar risco:", error);
-  }
-};
 
 // Carrega polígonos de risco
 const carregarPoligonos = async (lat: number, lng: number) => {
@@ -70,7 +53,6 @@ const carregarPoligonos = async (lat: number, lng: number) => {
 
 // Ciclo de vida do componente
 onMounted(async () => {
-  await requestPermissions();
   await createNotificationChannel();
   
   initializeMap("map");
@@ -79,7 +61,7 @@ onMounted(async () => {
     if (lat && lng) {
       carregando.value = false;
       updatePosition(lat, lng);
-      verificarRisco(lat, lng);
+      carregarPoligonos(lat, lng);
     }
   });
 
