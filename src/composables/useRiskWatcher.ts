@@ -3,6 +3,7 @@ import { ref, onUnmounted } from 'vue';
 import { Geolocation } from '@capacitor/geolocation';
 import { usePostRequest } from './useApi';
 import { useNotification } from './useNotification';
+import { useTermosAceitos } from '@/composables/useTermosAceitos';
 
 const WATCH_INTERVAL = 20000; // 20 segundos
 
@@ -46,6 +47,11 @@ export function useRiskWatcher() {
 
   // Inicia o monitoramento
   const startWatching = async () => {
+    const aceitou = await useTermosAceitos();
+    if (!aceitou) {
+      console.warn("❌ Termos ainda não aceitos. Monitoramento não iniciado.");
+      return;
+    }
     if (isWatching.value) return;
     
     await createNotificationChannel();

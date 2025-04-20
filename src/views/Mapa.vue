@@ -17,6 +17,7 @@ import { useNotification } from "@/composables/useNotification";
 import { useMap } from "@/composables/useMapa";
 import L from 'leaflet';
 import Toast from "@/components/Toast.vue";
+import { useTermosAceitos } from '@/composables/useTermosAceitos';
 
 // Variáveis reativas
 const carregando = ref(true);
@@ -53,6 +54,8 @@ const carregarPoligonos = async (lat: number, lng: number) => {
 
 // Ciclo de vida do componente
 onMounted(async () => {
+  const aceitou = await useTermosAceitos();
+  if (!aceitou) return;
   await createNotificationChannel();
   
   initializeMap("map");

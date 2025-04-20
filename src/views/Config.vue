@@ -5,36 +5,31 @@
         <ion-title>Sobre o App</ion-title>
       </ion-toolbar>
     </ion-header>
-    
+
     <ion-content class="ion-padding">
       <div class="about-container">
         <h2>RiskArea Alert</h2>
-        
         <div class="about-card">
-          <p>Este aplicativo tem o objetivo de monitorar sua localização em segundo plano e alertar quando você se aproximar de áreas consideradas de risco.</p>
-          
+          <p>Este aplicativo tem o objetivo de monitorar sua localização em segundo plano e alertar quando você se
+            aproximar de áreas consideradas de risco.</p>
+
           <p>As notificações de alerta são disparadas periodicamente para manter você informado sobre sua segurança.</p>
-          
+
           <p class="highlight">🚀 Estamos em constante evolução!</p>
-          
+
           <p>Para ficar por dentro das atualizações e novidades:</p>
-          
-          <ion-button 
-            expand="block" 
-            color="success"
-            @click="openWhatsAppChannel"
-            class="whatsapp-button"
-          >
+
+          <ion-button expand="block" color="success" @click="openWhatsAppChannel" class="whatsapp-button">
             <ion-icon :icon="logoWhatsapp" slot="start"></ion-icon>
             Entrar no Canal do WhatsApp
           </ion-button>
-          
+
           <p class="small-text">Sua experiência e feedback são importantes para melhorarmos o aplicativo.</p>
         </div>
-        
+
         <div class="version-info">
           <p>Versão: 1.0</p>
-          <p>© 2023 RiskArea Team</p>
+          <p>© 2025 RiskArea Team</p>
         </div>
       </div>
     </ion-content>
@@ -75,7 +70,7 @@ const openWhatsAppChannel = async () => {
   border-radius: 12px;
   padding: 20px;
   margin: 20px 0;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 h2 {

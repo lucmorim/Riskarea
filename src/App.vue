@@ -9,6 +9,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { useNotification } from '@/composables/useNotification';
 import { useRiskWatcher } from '@/composables/useRiskWatcher';
+import { useTermosAceitos } from '@/composables/useTermosAceitos';
 
 const { 
   initializeAdMob, 
@@ -22,6 +23,8 @@ const { requestPermissions } = useNotification();
 const { startWatching } = useRiskWatcher();
 
 onMounted(async () => { 
+  const aceitou = await useTermosAceitos();
+  if (!aceitou) return;
   await initializeAdMob();
   await requestPermissions();
   await setupForegroundService();
