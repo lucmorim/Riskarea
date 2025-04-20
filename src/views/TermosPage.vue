@@ -33,15 +33,21 @@
 <script setup lang="ts">
 import { Preferences } from '@capacitor/preferences';
 import { useRouter } from 'vue-router';
+import { usePermissions } from '@/composables/usePermissions';
 
 const router = useRouter();
 
 const aceitarTermo = async () => {
     await Preferences.set({ key: 'aceitou_termos', value: 'true' });
-    router.replace('/tabs/mapa');
-    setTimeout(() => {
+    const permission = await usePermissions();
+    if (permission) {
+        router.replace('/tabs/mapa');
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    }else{
         window.location.reload();
-    }, 500);
+    }
 };
 </script>
 

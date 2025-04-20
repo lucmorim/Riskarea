@@ -19,14 +19,12 @@ const {
 } = useNotification();
 
 const adInterval = ref<NodeJS.Timeout>();
-const { requestPermissions } = useNotification();
 const { startWatching } = useRiskWatcher();
 
 onMounted(async () => { 
   const aceitou = await useTermosAceitos();
   if (!aceitou) return;
   await initializeAdMob();
-  await requestPermissions();
   await setupForegroundService();
 
   startWatching();

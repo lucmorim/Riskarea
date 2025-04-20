@@ -32,13 +32,13 @@ const { initializeMap, updatePosition, clearMap, polygonsLayer } = useMap();
 const carregarPoligonos = async (lat: number, lng: number) => {
   try {
     const response = await usePostRequest("/get-polygons", { latitude: lat, longitude: lng });
-    
+
     if (!response?.polygons?.length) return;
 
     polygonsLayer.value?.clearLayers();
 
     response.polygons.forEach((area: any) => {
-      const coords = area.geometria.coordinates[0].map(([lng, lat]: [number, number]) => [lat, lng]);      
+      const coords = area.geometria.coordinates[0].map(([lng, lat]: [number, number]) => [lat, lng]);
       // Agora usando L importado corretamente
       L.polygon(coords, {
         color: "red",
@@ -57,9 +57,9 @@ onMounted(async () => {
   const aceitou = await useTermosAceitos();
   if (!aceitou) return;
   await createNotificationChannel();
-  
+
   initializeMap("map");
-  
+
   const stopWatch = watch([latitude, longitude], ([lat, lng]) => {
     if (lat && lng) {
       carregando.value = false;
