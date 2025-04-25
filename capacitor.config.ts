@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.riskalert',
+  appId: 'com.riskalert.app',
   appName: 'RiskArea',
   webDir: 'dist',
   plugins: {
@@ -10,8 +10,8 @@ const config: CapacitorConfig = {
       trackingAuthorization: {
         description: 'Nós usamos identificadores para personalizar anúncios e análises' // Mensagem para solicitar permissão no iOS
       },
-      testingDevices: ['TEST_DEVICE_ID'], // Apenas para desenvolvimento
-      initializeForTesting: true // Mude para false em produção
+      // testingDevices: ['TEST_DEVICE_ID'], // Apenas para desenvolvimento
+      // initializeForTesting: true // Mude para false em produção
     }
   }
 };

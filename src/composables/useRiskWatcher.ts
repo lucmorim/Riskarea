@@ -1,41 +1,49 @@
-// src/composables/useRiskWatcher.ts
 import { ref, onUnmounted } from 'vue';
 import { Geolocation } from '@capacitor/geolocation';
 import { usePostRequest } from './useApi';
 import { useNotification } from './useNotification';
 import { useTermosAceitos } from '@/composables/useTermosAceitos';
+import { registerPlugin } from '@capacitor/core';
 
 const WATCH_INTERVAL = 20000; // 20 segundos
+interface RiskOverlayPlugin {
+  showOverlay(options: { message: string; color?: string; duration?: number }): Promise<void>;
+}
+const RiskOverlay = registerPlugin<RiskOverlayPlugin>('RiskOverlay');
 
 export function useRiskWatcher() {
   const { sendNotification, createNotificationChannel } = useNotification();
   const isWatching = ref(false);
-  const lastNotifiedArea = ref<string | null>(null); // Armazena APENAS a última área
-  
-  let watchInterval: NodeJS.Timeout | null = null;
+  const lastNotifiedArea = ref<string | null>(null);
+  let timeoutHandler: NodeJS.Timeout | null = null;
 
-  // Verificação principal
   const checkRiskArea = async () => {
     try {
       const position = await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
-        timeout: 10000
+        timeout: 10000,
       });
 
       const response = await usePostRequest('/check-risk-area', {
         latitude: position.coords.latitude,
-        longitude: position.coords.longitude
+        longitude: position.coords.longitude,
       });
 
       if (response?.alert && response.area) {
-        // Notifica APENAS se a área for diferente da última
-        console.log('last '+lastNotifiedArea.value);
-        console.log('response '+response.area);
-        if (lastNotifiedArea.value != response.area) {
-          console.warn("passou")
-          await sendNotification(response.menssage || `Nova área de risco: ${response.area}`);
-          lastNotifiedArea.value = response.area; // Atualiza o registro
+        if (lastNotifiedArea.value !== response.area) {
+          const mensagem = response.menssage || `Nova área de risco: ${response.area}`;
+
+          await sendNotification(mensagem);
+          lastNotifiedArea.value = response.area;
           console.log('🔔 Notificação enviada para:', response.area);
+
+          // 🔥 Chama o plugin nativo
+          await RiskOverlay.showOverlay({
+            message: mensagem,
+            color: '#e53935',
+            duration: 6000
+          });
+
         } else {
           console.log('🚫 Área repetida:', response.area);
         }
@@ -45,7 +53,13 @@ export function useRiskWatcher() {
     }
   };
 
-  // Inicia o monitoramento
+  const loopRiskArea = async () => {
+    await checkRiskArea();
+    if (isWatching.value) {
+      timeoutHandler = setTimeout(loopRiskArea, WATCH_INTERVAL);
+    }
+  };
+
   const startWatching = async () => {
     const aceitou = await useTermosAceitos();
     if (!aceitou) {
@@ -53,39 +67,31 @@ export function useRiskWatcher() {
       return;
     }
     if (isWatching.value) return;
-    
+
     await createNotificationChannel();
     isWatching.value = true;
-    lastNotifiedArea.value = null; // Reseta ao iniciar
-    
-    // Primeira verificação imediata
-    await checkRiskArea();
-    
-    // Configura intervalo
-    watchInterval = setInterval(checkRiskArea, WATCH_INTERVAL);
+    lastNotifiedArea.value = null;
+
     console.log('🛰️ Monitoramento iniciado');
+    await loopRiskArea();
   };
 
-  // Para o monitoramento
   const stopWatching = () => {
     if (!isWatching.value) return;
-    
-    if (watchInterval) {
-      clearInterval(watchInterval);
-      watchInterval = null;
+    if (timeoutHandler) {
+      clearTimeout(timeoutHandler);
+      timeoutHandler = null;
     }
-    
     isWatching.value = false;
     console.log('🛑 Monitoramento parado');
   };
 
-  // Limpeza automática
   onUnmounted(stopWatching);
 
   return {
     startWatching,
     stopWatching,
     isWatching,
-    lastNotifiedArea // Opcional: expor para debug
+    lastNotifiedArea,
   };
 }

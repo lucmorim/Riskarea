@@ -83,3 +83,7 @@ bash
 Copy
 chmod +x debug_logs.sh
 ./debug_logs.sh
+
+
+instalar o risk-overlay
+npm install ./risk-overlay

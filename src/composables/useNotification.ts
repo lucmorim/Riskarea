@@ -68,6 +68,15 @@ export function useNotification() {
     }
   }
 
+  function showOverlay(texto: string, cor: string = 'rgba(255, 0, 0, 0.9)', tempo = 5000) {
+    try {
+      // @ts-ignore
+      window?.mostrarOverlayGlobal?.(texto, cor, tempo);
+    } catch (error) {
+      console.warn('Erro ao exibir overlay:', error);
+    }
+  }
+
   async function sendNotification(area: string) {
     try {
       if (!(await requestPermissions())) {
@@ -107,8 +116,8 @@ export function useNotification() {
 
   const initializeAdMob = async () => {
     await AdMob.initialize({
-      testingDevices: ['TEST_DEVICE_ID'],
-      initializeForTesting: true
+      // testingDevices: ['TEST_DEVICE_ID'],
+      // initializeForTesting: true
     });
   };
 
@@ -119,7 +128,8 @@ export function useNotification() {
 
       if (!value || (now - Number(value)) > AD_INTERVAL) {
         await AdMob.prepareInterstitial({
-          adId: 'ca-app-pub-3940256099942544/1033173712' // Substitua pelo seu ID real
+          // adId: 'ca-app-pub-3940256099942544/1033173712' // Substitua pelo seu ID real
+          adId: 'ca-app-pub-4861242358977976/6940159897' // Substitua pelo seu ID real
         });
         await AdMob.showInterstitial();
         await Preferences.set({ key: 'lastAdShown', value: now.toString() });
@@ -162,5 +172,6 @@ export function useNotification() {
     showInterstitial,
     setupForegroundService,
     AD_INTERVAL,
+    showOverlay,
   };
 }

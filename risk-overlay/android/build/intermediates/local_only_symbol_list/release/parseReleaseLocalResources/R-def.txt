@@ -1,0 +1,6 @@
+R_DEF: Internal format may change without notice
+local
+drawable overlay_background
+id overlayRoot
+id overlayText
+layout overlay_layout

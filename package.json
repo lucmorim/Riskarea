@@ -10,7 +10,8 @@
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint .",
-    "xx": "npm run build &&  npx cap copy android && npx cap open android"
+    "xx": "npm run build &&  npx cap copy android && npx cap open android",
+    "nn": "npx cap sync android && cd android && gradlew clean && cd .. && npx cap open android"
   },
   "dependencies": {
     "@capacitor-community/admob": "^7.0.2",
@@ -32,6 +33,7 @@
     "@turf/turf": "^7.2.0",
     "ionicons": "^7.0.0",
     "leaflet": "^1.9.4",
+    "risk-overlay": "file:risk-overlay",
     "vue": "^3.3.0",
     "vue-router": "^4.2.0"
   },
