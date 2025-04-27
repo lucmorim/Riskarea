@@ -28,7 +28,7 @@
         </div>
 
         <div class="version-info">
-          <p>Versão: 1.0</p>
+          <p>Versão: 1.2.1</p>
           <p>© 2025 RiskArea Team</p>
         </div>
       </div>

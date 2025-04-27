@@ -1,16 +1,16 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml:2:13-83
-INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml:2:13-83
+ADDED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml:2:13-83
+INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml:2:13-83
 	package
-		INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml
+		INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml
 	xmlns:android
-		ADDED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml:2:23-81
+		ADDED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml:2:23-81
 uses-sdk
-INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml reason: use-sdk injection requested
-INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml
-INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml
+INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml reason: use-sdk injection requested
+INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml
+INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml
 	android:targetSdkVersion
-		INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml
+		INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml
 	android:minSdkVersion
-		INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest10056004210258016078.xml
+		INJECTED from C:\Users\lucmo\OneDrive\Documentos\TechMula\RiskArea\risk-overlay\android\build\intermediates\tmp\ProcessLibraryManifest\release\tempAndroidManifest3649970579090388972.xml
