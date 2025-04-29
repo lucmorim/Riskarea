@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, onUnmounted } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { IonPage, IonContent } from "@ionic/vue";
 import { useGeolocation } from "@/composables/useGeolocation";
 import { usePostRequest } from "@/composables/useApi";
@@ -49,13 +49,12 @@ const sugestoes = ref<any[]>([]);
 const modoBusca = ref(false);
 
 // Composables
-const { createNotificationChannel } = useNotification();
-const { latitude, longitude, startWatching, stopWatching } = useGeolocation();
+const { getCurrentPosition, error: geoError } = useGeolocation();
 const { initializeMap, updatePosition, clearMap, polygonsLayer } = useMap();
 
 const searchBarTop = ref('50px');
 
-// Carrega polígonos
+// Carrega polígonos (mantido igual)
 const carregarPoligonos = async (lat: number, lng: number) => {
   try {
     const response = await usePostRequest("/get-polygons", { latitude: lat, longitude: lng });
@@ -78,12 +77,13 @@ const carregarPoligonos = async (lat: number, lng: number) => {
   }
 };
 
+// Buscar sugestões (mantido igual)
 const buscarSugestoes = async () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(async () => {
-    if (!searchQuery.value.trim()) { // 👈 importante: trim para pegar vazio real
+    if (!searchQuery.value.trim()) {
       sugestoes.value = [];
-      modoBusca.value = false; // 👈 volta para modo GPS
+      modoBusca.value = false;
       return;
     }
 
@@ -97,7 +97,7 @@ const buscarSugestoes = async () => {
   }, 500);
 };
 
-// Selecionar sugestão
+// Selecionar sugestão (mantido igual)
 const selecionarSugestao = (item: any) => {
   const lat = parseFloat(item.lat);
   const lon = parseFloat(item.lon);
@@ -108,50 +108,38 @@ const selecionarSugestao = (item: any) => {
   updatePosition(lat, lon);
   carregarPoligonos(lat, lon);
 
-  searchQuery.value = item.display_name; // coloca o endereço bonitinho no input
-  sugestoes.value = []; // limpa as sugestões
+  searchQuery.value = item.display_name;
+  sugestoes.value = [];
 };
 
-// Limpar busca
+// Limpar busca - AGORA USANDO useGeolocation
 const limparBusca = async () => {
   searchQuery.value = '';
   sugestoes.value = [];
   modoBusca.value = false;
 
   try {
-    const position = await navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        carregando.value = false;
-        updatePosition(lat, lng);
-        carregarPoligonos(lat, lng);
-      },
-      (err) => {
-        console.error("Erro ao pegar localização atual:", err);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-      }
-    );
+    const position = await getCurrentPosition();
+    if (position) {
+      carregando.value = false;
+      updatePosition(position.latitude, position.longitude);
+      carregarPoligonos(position.latitude, position.longitude);
+    }
   } catch (error) {
     console.error('Erro ao tentar pegar localização:', error);
+    if (geoError.value) {
+      toastRef.value?.show(geoError.value);
+    }
   }
 };
-
-
-let stopWatch: any;
 
 onMounted(async () => {
   const aceitou = await useTermosAceitos();
   if (!aceitou) return;
 
-  await createNotificationChannel();
-
   initializeMap("map");
 
-  // Move o controle de zoom para baixo
+  // Ajuste do controle de zoom (mantido igual)
   setTimeout(() => {
     const zoomControl = document.querySelector('.leaflet-control-zoom')?.parentElement as HTMLElement;
     if (zoomControl) {
@@ -164,34 +152,24 @@ onMounted(async () => {
     }
   }, 500);
 
-
-  stopWatch = watch([latitude, longitude], ([lat, lng]) => {
-    if (!modoBusca.value) {
-      if (lat && lng) {
-        carregando.value = false;
-        updatePosition(lat, lng);
-        carregarPoligonos(lat, lng);
-      }
-    }
-  });
-
+  // Obter posição inicial
   try {
-    await startWatching({
-      enableHighAccuracy: true,
-      timeout: 15000
-    });
-  } catch (err) {
-    console.error("Erro no startWatching:", err);
+    const position = await getCurrentPosition();
+    if (position) {
+      carregando.value = false;
+      updatePosition(position.latitude, position.longitude);
+      carregarPoligonos(position.latitude, position.longitude);
+    }
+  } catch (error) {
+    console.error("Erro ao obter localização inicial:", error);
+    if (geoError.value) {
+      toastRef.value?.show(geoError.value);
+    }
   }
 
   onBeforeUnmount(() => {
-    stopWatch();
     clearMap();
   });
-});
-
-onUnmounted(() => {
-  stopWatching();
 });
 </script>
 
