@@ -86,14 +86,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue"
-import { IonPage, IonContent } from "@ionic/vue"
-import Toast from "@/components/Toast.vue"
-import L from "leaflet"
-import { useGeolocation } from "@/composables/useGeolocation"
-import { usePostRequest } from "@/composables/useApi"
-import { useMap } from "@/composables/useMapa"
-import { useTermosAceitos } from "@/composables/useTermosAceitos"
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import Toast from '@/components/Toast.vue'
+import L from 'leaflet'
+import { useGeolocation } from '@/composables/useGeolocation'
+import { useMap } from '@/composables/useMapa'
+import { useTermosAceitos } from '@/composables/useTermosAceitos'
+import { Http } from '@capacitor-community/http'
 
 type NominatimResult = {
   lat: string
@@ -114,14 +113,13 @@ type NominatimResult = {
 }
 
 const STORAGE_KEY = 'ultima_busca'
-let debounceTimer: any = null
+let debounceTimer: number | null = null
 
 const carregando = ref(true)
 const buscando = ref(false)
 const toastRef = ref<any>()
 const searchQuery = ref('')
 const sugestoes = ref<NominatimResult[]>([])
-const modoBusca = ref(false)
 const searchBarTop = ref('50px')
 
 const { getCurrentPosition, error: geoError } = useGeolocation()
@@ -133,86 +131,111 @@ const {
   polygonsLayer
 } = useMap()
 
-let localizacaoInterval: NodeJS.Timeout | null = null
+let localizacaoInterval: number | null = null
 
-const carregarPoligonos = async (lat: number, lng: number) => {
+const baseUrl = import.meta.env.VITE_API_URL
+
+// Desenha GeoJSON de polígonos no mapa
+function drawPolygons(geojson: GeoJSON.FeatureCollection) {
+  polygonsLayer.value?.clearLayers()
+  L.geoJSON(geojson, {
+    style: { color: 'red', fillOpacity: 0.4 }
+  }).addTo(polygonsLayer.value!)
+}
+
+// Carrega polígonos enviando a localização via POST (usando HTTP nativo, sem CORS)
+async function carregarPoligonos(latitude: number, longitude: number) {
   try {
-    const response = await usePostRequest("/get-polygons", { latitude: lat, longitude: lng })
-    if (!response?.polygons?.length) return
+    const url = `${baseUrl}/get-polygons`
+    const body = { latitude, longitude }
 
-    polygonsLayer.value?.clearLayers()
-
-    response.polygons.forEach((area: any) => {
-      const coords = area.geometria.coordinates[0].map(
-        ([lng, lat]: [number, number]) => [lat, lng]
-      )
-      L.polygon(coords, {
-        color: "red",
-        fillColor: "#ff0000",
-        fillOpacity: 0.4
-      })
-        .addTo(polygonsLayer.value!)
-        .bindPopup(`🔴 ${area.nome}`)
+    const response = await Http.post({
+      url,
+      headers: { 'Content-Type': 'application/json' },
+      data: body,
+      params: {}   // evita NullPointerException no Android
     })
-  } catch (error) {
-    console.error("Erro ao carregar polígonos:", error)
+
+    // Supondo que o backend retornou algo como { "polygons": [ { id, nome, geometria }, ... ] }
+    const raw = response.data as {
+      polygons: Array<{
+        id: number
+        nome: string
+        geometria: GeoJSON.Polygon & { crs?: any }
+      }>
+    }
+
+    // Converte cada item em um GeoJSON.Feature
+    const features: GeoJSON.Feature<GeoJSON.Geometry, { id: number; nome: string }>[] =
+      raw.polygons.map(item => ({
+        type: 'Feature',
+        properties: { id: item.id, nome: item.nome },
+        // descarta o "crs" dentro de geometria, pois o Leaflet já assume EPSG:4326 por padrão
+        geometry: {
+          type: item.geometria.type,
+          coordinates: item.geometria.coordinates
+        }
+      }))
+
+    const featureCollection: GeoJSON.FeatureCollection = {
+      type: 'FeatureCollection',
+      features
+    }
+
+    drawPolygons(featureCollection)
+  } catch (err) {
+    console.error('❌ Falha ao carregar polígonos (HTTP nativo):', err)
   }
 }
 
+// Função de busca de sugestões de endereço
 const buscarSugestoes = async () => {
-  clearTimeout(debounceTimer)
+  if (debounceTimer) clearTimeout(debounceTimer)
   buscando.value = true
-
-  debounceTimer = setTimeout(async () => {
+  debounceTimer = window.setTimeout(async () => {
     if (!searchQuery.value.trim()) {
       sugestoes.value = []
-      modoBusca.value = false
       buscando.value = false
       localStorage.removeItem(STORAGE_KEY)
       return
     }
-
     localStorage.setItem(STORAGE_KEY, searchQuery.value)
 
-    let lat = 0
-    let lon = 0
-
+    let lat = 0,
+      lon = 0
     try {
       const pos = await getCurrentPosition()
       lat = pos.latitude
       lon = pos.longitude
-    } catch (err) {
-      console.warn("Sem localização, busca global será feita")
+    } catch {
+      console.warn('Sem localização, busca global será feita')
     }
 
     try {
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
         searchQuery.value
       )}&addressdetails=1&limit=20&viewbox=${lon - 0.1},${lat + 0.1},${lon + 0.1},${lat - 0.1}&bounded=1`
-      const data: NominatimResult[] = await fetch(url).then(res => res.json())
-
+      const data: NominatimResult[] = await fetch(url).then(r => r.json())
       if (lat && lon) {
         data.sort((a, b) => {
-          const distA = Math.hypot(lat - +a.lat, lon - +a.lon)
-          const distB = Math.hypot(lat - +b.lat, lon - +b.lon)
-          return distA - distB
+          const da = Math.hypot(lat - +a.lat, lon - +a.lon)
+          const db = Math.hypot(lat - +b.lat, lon - +b.lon)
+          return da - db
         })
       }
-
-      const textoBusca = searchQuery.value
-        .normalize("NFD")
-        .replace(/[̀-ͯ]/g, "")
+      const texto = searchQuery.value
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
         .toLowerCase()
-
-      sugestoes.value = data.filter(item => {
-        const nome = (item.display_name ?? '')
-          .normalize("NFD")
-          .replace(/[̀-ͯ]/g, "")
+      sugestoes.value = data.filter(item =>
+        item.display_name
+          .normalize('NFD')
+          .replace(/\p{Diacritic}/gu, '')
           .toLowerCase()
-        return nome.includes(textoBusca)
-      })
-    } catch (error) {
-      console.error("Erro ao buscar sugestões:", error)
+          .includes(texto)
+      )
+    } catch (e) {
+      console.error('Erro ao buscar sugestões:', e)
     } finally {
       buscando.value = false
     }
@@ -222,46 +245,34 @@ const buscarSugestoes = async () => {
 const selecionarSugestao = (item: NominatimResult) => {
   const lat = parseFloat(item.lat)
   const lon = parseFloat(item.lon)
-
-  modoBusca.value = true
-  carregando.value = false
-
-  updatePosition(lat, lon)
-  carregarPoligonos(lat, lon)
-
   searchQuery.value = item.display_name
   sugestoes.value = []
+  updatePosition(lat, lon)
+  carregarPoligonos(lat, lon)
 }
 
 const limparBusca = async () => {
   searchQuery.value = ''
   sugestoes.value = []
-  modoBusca.value = false
   localStorage.removeItem(STORAGE_KEY)
-
   try {
-    const position = await getCurrentPosition()
-    if (position) {
-      carregando.value = false
-      updatePosition(position.latitude, position.longitude)
-      carregarPoligonos(position.latitude, position.longitude)
+    const pos = await getCurrentPosition()
+    if (pos) {
+      updatePosition(pos.latitude, pos.longitude)
+      carregarPoligonos(pos.latitude, pos.longitude)
     }
-  } catch (error) {
-    console.error("Erro ao tentar pegar localização:", error)
-    if (geoError.value) {
-      toastRef.value?.show(geoError.value)
-    }
+  } catch (e) {
+    console.error('Erro ao tentar pegar localização:', e)
+    if (geoError.value) toastRef.value?.show(geoError.value)
   }
 }
 
 const recentralizarNoUsuario = async () => {
   try {
     const pos = await getCurrentPosition()
-    if (pos) {
-      updatePosition(pos.latitude, pos.longitude)
-    }
+    if (pos) atualizarMarcadorUsuario(pos.latitude, pos.longitude)
   } catch (e) {
-    console.error("Erro ao recentralizar no usuário:", e)
+    console.error('Erro ao recentralizar:', e)
     if (geoError.value) toastRef.value?.show(geoError.value)
   }
 }
@@ -270,47 +281,28 @@ onMounted(async () => {
   const aceitou = await useTermosAceitos()
   if (!aceitou) return
 
-  initializeMap("map")
+  initializeMap('map')
 
-  const ultimaBusca = localStorage.getItem(STORAGE_KEY)
-  if (ultimaBusca) {
-    searchQuery.value = ultimaBusca
-    buscarSugestoes()
-  }
-
-  setTimeout(() => {
-    const zoomControl =
-      document.querySelector(".leaflet-control-zoom")?.parentElement as HTMLElement
-    if (zoomControl) {
-      zoomControl.classList.remove("leaflet-top")
-      zoomControl.classList.add("leaflet-bottom")
-      zoomControl.style.top = "auto"
-      zoomControl.style.bottom = "70px"
-      zoomControl.style.left = "10px"
-      zoomControl.style.zIndex = "1100"
-    }
-  }, 500)
-
+  // Obter localização inicial e recarregar polígonos no local exato
   try {
-    const position = await getCurrentPosition()
-    if (position) {
+    const pos = await getCurrentPosition()
+    if (pos) {
       carregando.value = false
-      updatePosition(position.latitude, position.longitude)
-      carregarPoligonos(position.latitude, position.longitude)
+      updatePosition(pos.latitude, pos.longitude)
+      await carregarPoligonos(pos.latitude, pos.longitude)
     }
-  } catch (error) {
-    console.error("Erro ao obter localização inicial:", error)
+  } catch (e) {
+    console.error('Erro ao obter localização inicial:', e)
   }
 
-  localizacaoInterval = setInterval(async () => {
+  // Atualiza só o marcador sem mover a view a cada 15s
+  localizacaoInterval = window.setInterval(async () => {
     if (!searchQuery.value && !sugestoes.value.length) {
       try {
         const pos = await getCurrentPosition()
-        if (pos) {
-          atualizarMarcadorUsuario(pos.latitude, pos.longitude)
-        }
+        if (pos) atualizarMarcadorUsuario(pos.latitude, pos.longitude)
       } catch (e) {
-        console.error("Erro ao atualizar localização periódica:", e)
+        console.error('Erro ao atualizar localização:', e)
       }
     }
   }, 15000)

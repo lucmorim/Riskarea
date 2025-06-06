@@ -1,5 +1,5 @@
 // src/composables/useMapa.ts
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, nextTick } from 'vue'
 import L from 'leaflet'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import 'leaflet/dist/leaflet.css'
@@ -63,7 +63,22 @@ export function useMap() {
       center: [-22.9068, -43.1729],
       zoom: 13,
       minZoom: 10,
-      maxZoom: 14  // limita ao penúltimo nível de zoom
+      maxZoom: 14,
+      zoomControl: false
+    })
+
+    // Adiciona o controle de zoom no canto inferior esquerdo
+    const zoomControl = L.control.zoom({ position: 'bottomleft' })
+    zoomControl.addTo(map.value)
+
+    // Ajusta a posição para ficar mais acima
+    nextTick(() => {
+      const container = map.value!.getContainer()
+      const zoomEl = container.querySelector<HTMLElement>('.leaflet-control-zoom')
+      if (zoomEl) {
+        // Exemplo: desloca 80px acima do rodapé
+        zoomEl.style.bottom = '80px'
+      }
     })
 
     new MobileTileLayer(
@@ -71,7 +86,7 @@ export function useMap() {
       {
         subdomains: ['a', 'b', 'c'],
         minZoom: 10,
-        maxZoom: 14,   // corrige também no layer
+        maxZoom: 14, // corrige também no layer
         attribution: '&copy; OpenStreetMap contributors'
       }
     ).addTo(map.value)

@@ -1,4 +1,6 @@
 int drawable overlay_background 0x0
-int id overlayRoot 0x0
 int id overlayText 0x0
+int id overlay_close_button 0x0
+int id overlay_container 0x0
+int id overlay_root 0x0
 int layout overlay_layout 0x0

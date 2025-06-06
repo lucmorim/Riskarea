@@ -11,12 +11,13 @@
     "test:unit": "vitest",
     "lint": "eslint .",
     "xx": "npm run build &&  npx cap copy android && npx cap open android",
-    "nn": "npx cap sync android && cd android && gradlew clean && cd .. && npx cap open android"
+    "nn": "npx cap sync android && cd android && gradlew clean assembleDebug && cd .. && npx cap open android"
   },
   "dependencies": {
     "@capacitor-community/admob": "^7.0.2",
+    "@capacitor-community/http": "^1.4.1",
     "@capacitor/android": "^7.0.1",
-    "@capacitor/app": "7.0.0",
+    "@capacitor/app": "^7.0.1",
     "@capacitor/background-runner": "^2.1.0",
     "@capacitor/browser": "^7.0.1",
     "@capacitor/core": "^7.0.1",

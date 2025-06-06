@@ -1,20 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/overlayRoot"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:background="@drawable/overlay_background"
-    android:orientation="vertical"
-    android:gravity="center">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#BB000000">  <!-- Agora 60% de opacidade (mais escuro) -->
 
-    <TextView
-        android:id="@+id/overlayText"
+    <!-- Container vertical centralizado -->
+    <LinearLayout
+        android:id="@+id/overlay_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:padding="8dp"
-        android:text="⚠️ Atenção!" />
-</LinearLayout>
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center"
+        android:padding="16dp">
+
+        <!-- Texto de alerta em branco, tamanho 18sp -->
+        <TextView
+            android:id="@+id/overlayText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚠️ Atenção: Você está em área de risco!"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="8dp" />
+
+        <!-- Botão “FECHAR”, abaixo do texto -->
+        <Button
+            android:id="@+id/overlay_close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FECHAR"
+            android:textAllCaps="true"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#FFFFFF"   
+            android:textColor="#000000" 
+            android:padding="8dp" />
+    </LinearLayout>
+</FrameLayout>
