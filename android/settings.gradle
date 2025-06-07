@@ -2,9 +2,4 @@ include ':app'
 include ':capacitor-cordova-android-plugins'
 project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
 
-// Inclua o plugin de overlay como um “subprojeto” dentro do Android
-// Pressupõe que “risk-overlay/android” contém o build.gradle do plugin
-include ':risk-overlay'
-project(':risk-overlay').projectDir = new File(rootProject.projectDir, '../../risk-overlay/android')
-
 apply from: 'capacitor.settings.gradle'

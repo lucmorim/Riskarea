@@ -24,6 +24,8 @@ import android.content.pm.PackageManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import com.riskalert.overlay.RiskOverlayPlugin;
+
 public class MainActivity extends BridgeActivity {
 
     public static Bridge capacitorBridge;
@@ -47,6 +49,9 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Registra o plugin RiskOverlay
+        this.registerPlugin(RiskOverlayPlugin.class);
+
         super.onCreate(savedInstanceState);
 
         // Captura o Bridge do Capacitor

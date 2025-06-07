@@ -1,7 +1,0 @@
-com.riskalert.overlay
-drawable overlay_background
-id overlayText
-id overlay_close_button
-id overlay_container
-id overlay_root
-layout overlay_layout
