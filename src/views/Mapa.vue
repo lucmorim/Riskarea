@@ -6,11 +6,7 @@
       <div class="search-bar" :style="{ top: searchBarTop }">
         <div class="search-input-container">
           <span class="search-icon">🔍</span>
-          <input
-            v-model="searchQuery"
-            placeholder="Digite um endereço..."
-            @input="buscarSugestoes"
-          />
+          <input v-model="searchQuery" placeholder="Digite um endereço..." @input="buscarSugestoes" />
           <button v-if="searchQuery" @click="limparBusca">✖️</button>
         </div>
 
@@ -20,12 +16,7 @@
         </div>
 
         <ul v-if="!buscando && sugestoes.length" class="sugestoes">
-          <li
-            v-for="(item, index) in sugestoes"
-            :key="index"
-            class="fade-in"
-            @click="selecionarSugestao(item)"
-          >
+          <li v-for="(item, index) in sugestoes" :key="index" class="fade-in" @click="selecionarSugestao(item)">
             <div class="linha-principal">
               📍 {{
                 item.address.road ||
@@ -42,16 +33,14 @@
             </div>
             <div class="linha-secundaria-cidade">
               {{ item.address.state || '' }}
-              <template
-                v-if="
-                  item.address.state &&
-                  (
-                    item.address.city ||
-                    item.address.town ||
-                    item.address.village
-                  )
-                "
-              >
+              <template v-if="
+                item.address.state &&
+                (
+                  item.address.city ||
+                  item.address.town ||
+                  item.address.village
+                )
+              ">
                 -
               </template>
               {{
@@ -68,10 +57,7 @@
           </li>
         </ul>
 
-        <div
-          v-if="!buscando && searchQuery && sugestoes.length === 0"
-          class="nenhum-resultado"
-        >
+        <div v-if="!buscando && searchQuery && sugestoes.length === 0" class="nenhum-resultado">
           Nenhum resultado encontrado.
         </div>
       </div>
@@ -138,10 +124,40 @@ const baseUrl = import.meta.env.VITE_API_URL
 // Desenha GeoJSON de polígonos no mapa
 function drawPolygons(geojson: GeoJSON.FeatureCollection) {
   polygonsLayer.value?.clearLayers()
+
   L.geoJSON(geojson, {
-    style: { color: 'red', fillOpacity: 0.4 }
+    style: {
+      color: 'red',
+      weight: 1.5,
+      fillOpacity: 0.4,
+    },
+    onEachFeature: function (feature, layer) {
+      const nome = feature.properties?.nome || 'Área sem nome'
+
+      layer.on('click', function () {
+        // Destacar polígono clicado
+        (layer as L.Path).setStyle({
+          color: 'blue',
+          weight: 3,
+          fillOpacity: 0.5,
+        })
+
+        // Abrir popup com o nome
+        layer.bindPopup(`<b>${nome}</b>`).openPopup()
+
+        // Quando fechar, volta ao estilo padrão
+        layer.on('popupclose', function () {
+          (layer as L.Path).setStyle({
+            color: 'red',
+            weight: 1.5,
+            fillOpacity: 0.4,
+          })
+        })
+      })
+    },
   }).addTo(polygonsLayer.value!)
 }
+
 
 // Carrega polígonos enviando a localização via POST (usando HTTP nativo, sem CORS)
 async function carregarPoligonos(latitude: number, longitude: number) {
@@ -192,6 +208,7 @@ async function carregarPoligonos(latitude: number, longitude: number) {
 const buscarSugestoes = async () => {
   if (debounceTimer) clearTimeout(debounceTimer)
   buscando.value = true
+
   debounceTimer = window.setTimeout(async () => {
     if (!searchQuery.value.trim()) {
       sugestoes.value = []
@@ -199,23 +216,36 @@ const buscarSugestoes = async () => {
       localStorage.removeItem(STORAGE_KEY)
       return
     }
+
     localStorage.setItem(STORAGE_KEY, searchQuery.value)
 
+    // Remove números da busca (ex.: "Rua São Lázaro 15" -> "Rua São Lázaro")
+    const textoSemNumero = searchQuery.value.replace(/\d+/g, '').trim()
+
     let lat = 0,
-      lon = 0
+        lon = 0
+
     try {
       const pos = await getCurrentPosition()
       lat = pos.latitude
       lon = pos.longitude
     } catch {
-      console.warn('Sem localização, busca global será feita')
+      console.warn('⚠️ Sem localização, a busca será global.')
     }
 
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        searchQuery.value
-      )}&addressdetails=1&limit=20&viewbox=${lon - 0.1},${lat + 0.1},${lon + 0.1},${lat - 0.1}&bounded=1`
+      const range = 0.3 // +-30km
+
+      const url = lat && lon
+        ? `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            textoSemNumero
+          )}&addressdetails=1&limit=20&viewbox=${lon - range},${lat + range},${lon + range},${lat - range}&bounded=1`
+        : `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            textoSemNumero
+          )}&addressdetails=1&limit=20`
+
       const data: NominatimResult[] = await fetch(url).then(r => r.json())
+
       if (lat && lon) {
         data.sort((a, b) => {
           const da = Math.hypot(lat - +a.lat, lon - +a.lon)
@@ -223,10 +253,12 @@ const buscarSugestoes = async () => {
           return da - db
         })
       }
-      const texto = searchQuery.value
+
+      const texto = textoSemNumero
         .normalize('NFD')
         .replace(/\p{Diacritic}/gu, '')
         .toLowerCase()
+
       sugestoes.value = data.filter(item =>
         item.display_name
           .normalize('NFD')
@@ -235,7 +267,7 @@ const buscarSugestoes = async () => {
           .includes(texto)
       )
     } catch (e) {
-      console.error('Erro ao buscar sugestões:', e)
+      console.error('❌ Erro ao buscar sugestões:', e)
     } finally {
       buscando.value = false
     }
@@ -393,8 +425,13 @@ onBeforeUnmount(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .nenhum-resultado {
@@ -432,7 +469,10 @@ onBeforeUnmount(() => {
 }
 
 @keyframes fadeInUp {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .linha-principal {
@@ -479,7 +519,7 @@ onBeforeUnmount(() => {
 
 .btn-recentralizar {
   position: absolute;
-  bottom: 90px;
+  bottom: calc(90px + env(safe-area-inset-bottom, 0));
   right: 20px;
   z-index: 1100;
   background: #007bff;
