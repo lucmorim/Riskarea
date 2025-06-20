@@ -1,0 +1,4 @@
+mbutil --scheme=osm --minzoom=10 --maxzoom=15 \
+  https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png \
+  rio.mbtiles \
+  -23.101,-43.795,-22.728,-43.119

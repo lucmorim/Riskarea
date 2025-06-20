@@ -1,5 +1,0 @@
-com.riskalert.overlay
-drawable overlay_background
-id overlayRoot
-id overlayText
-layout overlay_layout

@@ -46,7 +46,8 @@ export const usePermissions = async (): Promise<boolean> => {
       console.warn("Overlay permission check falhou:", error);
     }
 
-    const allGranted = hasNotificationPermission && hasGeoPermission && hasOverlayPermission;
+    // const allGranted = hasNotificationPermission && hasGeoPermission && hasOverlayPermission;
+    const allGranted = hasNotificationPermission && hasGeoPermission;
 
     if (allGranted) {
       setTimeout(() => location.reload(), 500);

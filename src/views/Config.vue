@@ -8,14 +8,17 @@
 
     <ion-content class="ion-padding">
       <div class="about-container">
-        <h2>RiskArea Alert</h2>
+        <h2>Risk Alert</h2>
         <div class="about-card">
-          <p>Este aplicativo tem o objetivo de monitorar sua localização em segundo plano e alertar quando você se
+          <p>
+            As áreas indicadas neste aplicativo foram demarcadas com base em informações públicas disponíveis na internet e, portanto, podem não refletir com exatidão os limites reais ou estar completamente atualizadas. Não fazemos distinção entre facções, grupos criminosos ou milícias: todos os locais são apresentados de forma genérica e imparcial. Utilize esses dados apenas como referência e adote sempre medidas de segurança adicionais ao se deslocar.
+          </p>
+          <!-- <p>Este aplicativo tem o objetivo de monitorar sua localização em segundo plano e alertar quando você se
             aproximar de áreas consideradas de risco.</p>
 
           <p>As notificações de alerta são disparadas periodicamente para manter você informado sobre sua segurança.</p>
 
-          <p class="highlight">🚀 Estamos em constante evolução!</p>
+          <p class="highlight">🚀 Estamos em constante evolução!</p> -->
 
           <p>Para ficar por dentro das atualizações e novidades:</p>
 
@@ -28,7 +31,7 @@
         </div>
 
         <div class="version-info">
-          <p>Versão: 1.2.1</p>
+          <p>Versão: 1.2.2</p>
           <p>© 2025 RiskArea Team</p>
         </div>
       </div>

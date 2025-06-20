@@ -24,10 +24,10 @@ const routes: Array<RouteRecordRaw> = [
         path: 'mapa',
         component: () => import('@/views/Mapa.vue')
       },
-      {
-        path: 'news',
-        component: () => import('@/views/News.vue')
-      },
+      // {
+      //   path: 'news',
+      //   component: () => import('@/views/News.vue')
+      // },
       {
         path: 'config',
         component: () => import('@/views/Config.vue')

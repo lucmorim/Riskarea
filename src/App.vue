@@ -8,30 +8,26 @@
 import { IonApp, IonRouterOutlet } from '@ionic/vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { useNotification } from '@/composables/useNotification';
-import { useRiskWatcher } from '@/composables/useRiskWatcher';
 import { useTermosAceitos } from '@/composables/useTermosAceitos';
 
-const { 
-  initializeAdMob, 
-  showInterstitial,
-  setupForegroundService,
-  AD_INTERVAL
-} = useNotification();
+const { initializeAdMob, showInterstitial, AD_INTERVAL } = useNotification();
 
 const adInterval = ref<NodeJS.Timeout>();
-const { startWatching } = useRiskWatcher();
 
-onMounted(async () => { 
+onMounted(async () => {
   const aceitou = await useTermosAceitos();
   if (!aceitou) return;
-  await initializeAdMob();
-  await setupForegroundService();
 
-  startWatching();
-  
-  adInterval.value = setInterval(showInterstitial, AD_INTERVAL);
-  
-  setTimeout(showInterstitial, 5000);
+  try {
+
+    await initializeAdMob();
+    adInterval.value = setInterval(showInterstitial, AD_INTERVAL);
+    setTimeout(showInterstitial, 5000);
+
+    console.log('🚀 App inicializado com sucesso.');
+  } catch (error) {
+    console.error('❌ Erro ao iniciar serviços:', error);
+  }
 });
 
 onBeforeUnmount(() => {

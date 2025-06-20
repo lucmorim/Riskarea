@@ -1,0 +1,15 @@
+<resources>
+    <!-- Cores já existentes... -->
+    <color name="fab_background">#FF5722</color>      <!-- cor padrão (ex.: laranja) -->
+    <color name="fab_icon">#FFFFFF</color>            <!-- ícone branco -->
+
+    <!-- Nova cor para “play” (verde) -->
+    <!-- <color name="fab_background_play">#4CAF50</color> Green 500 -->
+    <color name="fab_background_play">#FF5722</color>
+    <color name="fab_icon_play">#FFFFFF</color>       <!-- ícone branco sobre verde -->
+
+    <!-- (Opcional) cor para “pause” reforçada -->
+    <color name="fab_background_pause">#4CAF50</color> <!-- mantém a laranja original -->
+    <!-- <color name="fab_background_pause">#FF5722</color> mantém a laranja original -->
+    <color name="fab_icon_pause">#FFFFFF</color>
+</resources>
