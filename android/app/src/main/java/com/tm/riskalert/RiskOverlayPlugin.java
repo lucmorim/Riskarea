@@ -22,6 +22,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.tm.riskalert.RiskLocationService;
+import android.app.ActivityManager;
+import com.getcapacitor.JSObject;
 
 /**
  * Plugin para exibir um overlay de alerta de risco simples com botão fechar e
@@ -32,6 +34,7 @@ public class RiskOverlayPlugin extends Plugin {
 
     private FrameLayout overlayView;
     private boolean overlayVisible = false;
+    private boolean isTrackingActive = false;
 
     @Override
     public void load() {
@@ -162,6 +165,7 @@ public class RiskOverlayPlugin extends Plugin {
         } else {
             getContext().startService(serviceIntent);
         }
+        isTrackingActive = true;
         call.resolve();
     }
 
@@ -169,6 +173,14 @@ public class RiskOverlayPlugin extends Plugin {
     public void stopTracking(PluginCall call) {
         Intent serviceIntent = new Intent(getContext(), RiskLocationService.class);
         getContext().stopService(serviceIntent);
+        isTrackingActive = false;
         call.resolve();
+    }
+
+    @PluginMethod
+    public void isTracking(PluginCall call) {
+        JSObject result = new JSObject();
+        result.put("running", isTrackingActive);
+        call.resolve(result);
     }
 }
