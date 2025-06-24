@@ -67,18 +67,18 @@ public class MainActivity extends BridgeActivity {
                         ViewGroup.LayoutParams.MATCH_PARENT));
 
         // Agora encontramos o FAB e configuramos o clique
-        fabToggle = findViewById(R.id.fab_toggle_tracking);
-        fabToggle.setOnClickListener(v -> {
-            if (!isTracking) {
-                startTrackingFlow();
-            } else {
-                stopRiskLocationService();
-                isTracking = false;
-                fabToggle.setImageResource(android.R.drawable.ic_media_play);
-                fabToggle.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.fab_background_pause));
-                fabToggle.setImageTintList(ContextCompat.getColorStateList(this, R.color.fab_icon_pause));
-            }
-        });
+        // fabToggle = findViewById(R.id.fab_toggle_tracking);
+        // fabToggle.setOnClickListener(v -> {
+        //     if (!isTracking) {
+        //         startTrackingFlow();
+        //     } else {
+        //         stopRiskLocationService();
+        //         isTracking = false;
+        //         fabToggle.setImageResource(android.R.drawable.ic_media_play);
+        //         fabToggle.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.fab_background_pause));
+        //         fabToggle.setImageTintList(ContextCompat.getColorStateList(this, R.color.fab_icon_pause));
+        //     }
+        // });
     }
 
     /**

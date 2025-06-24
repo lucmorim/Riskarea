@@ -1,24 +1,15 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Sobre o App</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
     <ion-content class="ion-padding">
       <div class="about-container">
-        <h2>Risk Alert</h2>
         <div class="about-card">
           <p>
-            As áreas indicadas neste aplicativo foram demarcadas com base em informações públicas disponíveis na internet e, portanto, podem não refletir com exatidão os limites reais ou estar completamente atualizadas. Não fazemos distinção entre facções, grupos criminosos ou milícias: todos os locais são apresentados de forma genérica e imparcial. Utilize esses dados apenas como referência e adote sempre medidas de segurança adicionais ao se deslocar.
+            As áreas indicadas neste aplicativo foram demarcadas com base em informações públicas disponíveis na
+            internet e, portanto, podem não refletir com exatidão os limites reais ou estar completamente atualizadas.
+            Não fazemos distinção entre facções, grupos criminosos ou milícias: todos os locais são apresentados de
+            forma genérica e imparcial. Utilize esses dados apenas como referência e adote sempre medidas de segurança
+            adicionais ao se deslocar.
           </p>
-          <!-- <p>Este aplicativo tem o objetivo de monitorar sua localização em segundo plano e alertar quando você se
-            aproximar de áreas consideradas de risco.</p>
-
-          <p>As notificações de alerta são disparadas periodicamente para manter você informado sobre sua segurança.</p>
-
-          <p class="highlight">🚀 Estamos em constante evolução!</p> -->
 
           <p>Para ficar por dentro das atualizações e novidades:</p>
 
@@ -30,8 +21,20 @@
           <p class="small-text">Sua experiência e feedback são importantes para melhorarmos o aplicativo.</p>
         </div>
 
+        <div class="about-card">
+          <p>
+            Clique no botão abaixo para iniciar o rastreamento e ser avisado sempre que estiver próximo de uma área
+            considerada de risco. Você pode pausar o rastreamento a qualquer momento. </p>
+          <!-- 🔥 Botão de controle (Start/Stop) -->
+          <ion-button expand="block" :color="isTracking ? 'danger' : 'success'" @click="toggleTracking"
+            class="tracking-button">
+            <ion-icon :icon="isTracking ? pause : play" slot="start"></ion-icon>
+            {{ isTracking ? 'Parar Rastreamento' : 'Iniciar Rastreamento' }}
+          </ion-button>
+        </div>
+
         <div class="version-info">
-          <p>Versão: 1.2.2</p>
+          <p>Versão: 1.2.6</p>
           <p>© 2025 RiskArea Team</p>
         </div>
       </div>
@@ -40,23 +43,42 @@
 </template>
 
 <script setup lang="ts">
-import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonButton, IonIcon
-} from '@ionic/vue';
-import { logoWhatsapp } from 'ionicons/icons';
+import { IonPage, IonContent, IonButton, IonIcon } from '@ionic/vue';
+import { logoWhatsapp, play, pause } from 'ionicons/icons';
 import { Browser } from '@capacitor/browser';
+import { Capacitor } from '@capacitor/core';
+import { ref } from 'vue';
 
+// Acesso ao plugin RiskOverlay
+const RiskOverlay = (Capacitor as any).Plugins.RiskOverlay;
+
+// Estado se está rastreando ou não
+const isTracking = ref(false);
+
+// Função de abrir canal do WhatsApp
 const openWhatsAppChannel = async () => {
   try {
     await Browser.open({
       url: 'https://whatsapp.com/channel/0029Vb6XONJ4CrfYx74jaR3H',
       presentationStyle: 'popover'
     });
-  } catch (error) {
-    console.error('Erro ao abrir o WhatsApp:', error);
-    // Fallback para web caso o app não esteja instalado
+  } catch {
     window.open('https://whatsapp.com/channel/0029Vb6XONJ4CrfYx74jaR3H', '_blank');
+  }
+};
+
+// Start/Stop do rastreamento
+const toggleTracking = async () => {
+  try {
+    if (isTracking.value) {
+      await RiskOverlay.stopTracking();
+      isTracking.value = false;
+    } else {
+      await RiskOverlay.startTracking();
+      isTracking.value = true;
+    }
+  } catch (err) {
+    console.error('Erro ao controlar rastreamento:', err);
   }
 };
 </script>
@@ -64,7 +86,7 @@ const openWhatsAppChannel = async () => {
 <style scoped>
 .about-container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: calc(env(safe-area-inset-top) + 30px) auto 0 auto;
   text-align: center;
 }
 
@@ -76,22 +98,10 @@ const openWhatsAppChannel = async () => {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-h2 {
-  color: var(--ion-color-primary);
-  font-size: 1.8em;
-  margin-bottom: 10px;
-}
-
 p {
   color: var(--ion-color-dark);
   line-height: 1.6;
   margin-bottom: 15px;
-}
-
-.highlight {
-  color: var(--ion-color-danger);
-  font-weight: bold;
-  margin: 20px 0;
 }
 
 .small-text {
@@ -104,6 +114,15 @@ p {
   --background: #25D366;
   --background-activated: #128C7E;
   --background-hover: #128C7E;
+}
+
+.tracking-button {
+  margin: 10px 0;
+  --background: var(--ion-color-success);
+}
+
+.tracking-button.ion-color-danger {
+  --background: var(--ion-color-danger);
 }
 
 .version-info {

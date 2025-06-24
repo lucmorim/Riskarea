@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <!-- FloatingActionButton posicionado no canto inferior direito -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <!-- <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_toggle_tracking"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -14,6 +14,6 @@
         android:src="@android:drawable/ic_media_play"
         app:backgroundTint="@color/fab_background_pause"
         app:tint="@color/fab_icon_pause"
-        android:layout_gravity="bottom|end" />
+        android:layout_gravity="bottom|end" /> -->
 
 </FrameLayout>
