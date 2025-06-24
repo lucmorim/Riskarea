@@ -302,7 +302,9 @@ const limparBusca = async () => {
 const recentralizarNoUsuario = async () => {
   try {
     const pos = await getCurrentPosition()
-    if (pos) atualizarMarcadorUsuario(pos.latitude, pos.longitude)
+    if (pos) {
+      updatePosition(pos.latitude, pos.longitude, 13)
+    }
   } catch (e) {
     console.error('Erro ao recentralizar:', e)
     if (geoError.value) toastRef.value?.show(geoError.value)
@@ -450,6 +452,8 @@ onBeforeUnmount(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   max-height: 300px;
   overflow-y: auto;
+  z-index: 9999;
+  position: relative;
 }
 
 .sugestoes li {

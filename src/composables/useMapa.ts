@@ -62,8 +62,8 @@ export function useMap() {
     map.value = L.map(elementId, {
       center: [-22.9068, -43.1729],
       zoom: 13,
-      minZoom: 10,
-      maxZoom: 14,
+      // minZoom: 10,
+      // maxZoom: 14,
       zoomControl: false
     })
 
@@ -95,9 +95,15 @@ export function useMap() {
     return map.value
   }
 
-  function updatePosition(lat: number, lng: number): void {
+  function updatePosition(lat: number, lng: number, zoom?: number): void {
     if (!map.value) return
-    map.value.setView([lat, lng], Math.min(map.value.getZoom(), 14))
+
+    if (zoom) {
+      map.value.setView([lat, lng], zoom)
+    } else {
+      map.value.setView([lat, lng])
+    }
+
     if (userMarker.value) {
       userMarker.value.setLatLng([lat, lng])
     } else {
@@ -112,6 +118,7 @@ export function useMap() {
         .openPopup()
     }
   }
+
 
   function atualizarMarcadorUsuario(lat: number, lng: number): void {
     if (userMarker.value) userMarker.value.setLatLng([lat, lng])
