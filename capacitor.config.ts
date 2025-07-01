@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.riskalert.app',
-  appName: 'RiskArea',
+  appName: 'RiskAlert',
   webDir: 'dist',
   plugins: {
     AdMob: {

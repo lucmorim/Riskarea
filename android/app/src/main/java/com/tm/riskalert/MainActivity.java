@@ -26,6 +26,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.riskalert.overlay.RiskOverlayPlugin;
 
+import com.google.android.gms.ads.MobileAds;
+
 public class MainActivity extends BridgeActivity {
 
     public static Bridge capacitorBridge;
@@ -54,6 +56,10 @@ public class MainActivity extends BridgeActivity {
 
         super.onCreate(savedInstanceState);
 
+        // Inicializa AdMob uma vez
+        MobileAds.initialize(this, initializationStatus -> {
+        });
+
         // Captura o Bridge do Capacitor
         capacitorBridge = this.getBridge();
 
@@ -69,15 +75,17 @@ public class MainActivity extends BridgeActivity {
         // Agora encontramos o FAB e configuramos o clique
         // fabToggle = findViewById(R.id.fab_toggle_tracking);
         // fabToggle.setOnClickListener(v -> {
-        //     if (!isTracking) {
-        //         startTrackingFlow();
-        //     } else {
-        //         stopRiskLocationService();
-        //         isTracking = false;
-        //         fabToggle.setImageResource(android.R.drawable.ic_media_play);
-        //         fabToggle.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.fab_background_pause));
-        //         fabToggle.setImageTintList(ContextCompat.getColorStateList(this, R.color.fab_icon_pause));
-        //     }
+        // if (!isTracking) {
+        // startTrackingFlow();
+        // } else {
+        // stopRiskLocationService();
+        // isTracking = false;
+        // fabToggle.setImageResource(android.R.drawable.ic_media_play);
+        // fabToggle.setBackgroundTintList(ContextCompat.getColorStateList(this,
+        // R.color.fab_background_pause));
+        // fabToggle.setImageTintList(ContextCompat.getColorStateList(this,
+        // R.color.fab_icon_pause));
+        // }
         // });
     }
 
