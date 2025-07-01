@@ -40,7 +40,7 @@ public class RiskLocationService extends Service {
     private static final String TAG = "RiskLocationService";
     private static final String CHANNEL_ID = "RiskLocationChannel";
     private static final int NOTIFICATION_ID = 1001;
-    private static final float MIN_DISPLACEMENT_METERS = 200f;
+    private static final float MIN_DISPLACEMENT_METERS = 500f;
 
     private FusedLocationProviderClient fusedClient;
     private LocationRequest locationRequest;
