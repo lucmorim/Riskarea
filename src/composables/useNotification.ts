@@ -5,7 +5,7 @@ import { AdMob } from '@capacitor-community/admob';
 import { Preferences } from '@capacitor/preferences';
 
 // Configurações
-const AD_INTERVAL = 30 * 60 * 1000; // 30 minutos entre anúncios
+const AD_INTERVAL = 15 * 60 * 1000; // 30 minutos entre anúncios
 const NOTIFICATION_INTERVAL = 20000; // 20 segundos entre notificações
 
 // Estado reativo
