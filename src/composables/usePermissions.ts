@@ -31,7 +31,7 @@ export const usePermissions = async (): Promise<boolean> => {
       hasGeoPermission = geoStatus.location === "granted";
     }
 
-    // 🧱 Overlay (plugin nativo)
+    // 🧱 Overlay
     let hasOverlayPermission = false;
     try {
       const overlay = await RiskOverlay.checkPermission();
@@ -39,15 +39,13 @@ export const usePermissions = async (): Promise<boolean> => {
 
       if (!hasOverlayPermission) {
         await RiskOverlay.requestPermission();
-        // O usuário será redirecionado para a tela de configurações, então podemos aguardar manualmente ou reiniciar depois
         return false;
       }
     } catch (error) {
-      console.warn("Overlay permission check falhou:", error);
+      console.warn("Falha ao verificar ou solicitar permissão de overlay:", error);
     }
 
-    // const allGranted = hasNotificationPermission && hasGeoPermission && hasOverlayPermission;
-    const allGranted = hasNotificationPermission && hasGeoPermission;
+    const allGranted = hasNotificationPermission && hasGeoPermission && hasOverlayPermission;
 
     if (allGranted) {
       setTimeout(() => location.reload(), 500);
