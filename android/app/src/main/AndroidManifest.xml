@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.tm.riskalert">
 
     <!-- 1. Permissões de localização -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- Para Android 10+ (rastreamento em background) -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-
-    <!-- 2. Permissão para Foreground Service -->
+    
+    <!-- 2. Foreground service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
-    <!-- 3. Permissão de overlay (SYSTEM_ALERT_WINDOW) -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" />
+
+    <!-- 3. Overlay e armazenamento -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+
+    <!-- 4. Outras permissões -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.CAPTURE_VIDEO_OUTPUT" />
 
     <application
         android:allowBackup="true"
@@ -37,6 +49,7 @@
             </intent-filter>
         </activity>
 
+        <!-- FileProvider (caso salve capturas de tela) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -47,11 +60,12 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- AdMob -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-4861242358977976~3407214777" />
 
-        <!-- Única declaração do mesmo serviço RiskLocationService -->
+        <!-- RiskLocationService -->
         <service
             android:name=".RiskLocationService"
             android:enabled="true"
@@ -59,21 +73,20 @@
             android:foregroundServiceType="location"
             android:stopWithTask="false" />
 
-            <service
-                android:name=".RiskLocationService"
-                android:enabled="true"
-                android:exported="false"
-                android:foregroundServiceType="location"
-                android:stopWithTask="false" />
+        <!-- RiskOverlayService (novo, se necessário) -->
+        <service
+            android:name="com.tm.riskalert.ocr.RiskOverlayService"
+            android:exported="false" />
 
+        <service
+            android:name=".ocr.RiskOverlayServiceOCR"
+            android:exported="false"
+            android:foregroundServiceType="mediaProcessing" />
+
+        <activity
+            android:name=".ScreenCapturePermissionActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:exported="true" />
 
     </application>
-
-    <!-- Permissões adicionais (opcionais) -->
-    <!-- <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" /> -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 </manifest>

@@ -32,6 +32,11 @@
             {{ isTracking ? 'Parar Rastreamento' : 'Iniciar Rastreamento' }}
           </ion-button>
         </div>
+        <ion-button expand="block" :color="isOCRRunning ? 'danger' : 'primary'" @click="toggleOCR"
+          class="tracking-button">
+          <ion-icon :icon="isOCRRunning ? pause : searchOutline" slot="start"></ion-icon>
+          {{ isOCRRunning ? 'Parar OCR da Tela' : 'Iniciar OCR da Tela' }}
+        </ion-button>
 
         <div class="version-info">
           <p>Versão: 1.2.8</p>
@@ -44,16 +49,38 @@
 
 <script setup lang="ts">
 import { IonPage, IonContent, IonButton, IonIcon } from '@ionic/vue';
-import { logoWhatsapp, play, pause } from 'ionicons/icons';
+import { logoWhatsapp, play, pause, searchOutline } from 'ionicons/icons';
 import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { onMounted, ref } from 'vue';
 
 // Acesso ao plugin RiskOverlay
 const RiskOverlay = (Capacitor as any).Plugins.RiskOverlay;
+const RiskOCR = (Capacitor as any).Plugins.RiskOCR;
+
+const isOCRRunning = ref(false);
 
 // Estado se está rastreando ou não
 const isTracking = ref(false);
+
+const toggleOCR = async () => {
+  try {
+    if (!RiskOCR || typeof RiskOCR.startService !== 'function') {
+      console.error('❌ RiskOCR plugin não está disponível ou mal registrado.');
+      return;
+    }
+
+    if (isOCRRunning.value) {
+      await RiskOCR.stopService();
+      isOCRRunning.value = false;
+    } else {
+      await RiskOCR.startService();
+      isOCRRunning.value = true;
+    }
+  } catch (err) {
+    console.error('Erro ao controlar OCR:', err);
+  }
+};
 
 // Função de abrir canal do WhatsApp
 const openWhatsAppChannel = async () => {
@@ -79,6 +106,20 @@ const toggleTracking = async () => {
     }
   } catch (err) {
     console.error('Erro ao controlar rastreamento:', err);
+  }
+};
+
+const startOCR = async () => {
+  try {
+    if (!RiskOCR || typeof RiskOCR.startOCR !== 'function') {
+      console.error('❌ RiskOCR plugin não está disponível ou mal registrado.');
+      return;
+    }
+
+    const result = await RiskOCR.startOCR();
+    console.log('Texto extraído:', result.text);
+  } catch (err) {
+    console.error('Erro ao iniciar OCR:', err);
   }
 };
 

@@ -26,6 +26,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.riskalert.overlay.RiskOverlayPlugin;
 
+import com.tm.riskalert.ocr.RiskOverlayPluginOCR;
+
 public class MainActivity extends BridgeActivity {
 
     public static Bridge capacitorBridge;
@@ -51,6 +53,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // Registra o plugin RiskOverlay
         this.registerPlugin(RiskOverlayPlugin.class);
+        this.registerPlugin(RiskOverlayPluginOCR.class);
 
         super.onCreate(savedInstanceState);
 
@@ -69,15 +72,17 @@ public class MainActivity extends BridgeActivity {
         // Agora encontramos o FAB e configuramos o clique
         // fabToggle = findViewById(R.id.fab_toggle_tracking);
         // fabToggle.setOnClickListener(v -> {
-        //     if (!isTracking) {
-        //         startTrackingFlow();
-        //     } else {
-        //         stopRiskLocationService();
-        //         isTracking = false;
-        //         fabToggle.setImageResource(android.R.drawable.ic_media_play);
-        //         fabToggle.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.fab_background_pause));
-        //         fabToggle.setImageTintList(ContextCompat.getColorStateList(this, R.color.fab_icon_pause));
-        //     }
+        // if (!isTracking) {
+        // startTrackingFlow();
+        // } else {
+        // stopRiskLocationService();
+        // isTracking = false;
+        // fabToggle.setImageResource(android.R.drawable.ic_media_play);
+        // fabToggle.setBackgroundTintList(ContextCompat.getColorStateList(this,
+        // R.color.fab_background_pause));
+        // fabToggle.setImageTintList(ContextCompat.getColorStateList(this,
+        // R.color.fab_icon_pause));
+        // }
         // });
     }
 
