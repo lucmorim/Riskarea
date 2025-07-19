@@ -171,7 +171,7 @@ public class RiskLocationService extends Service {
      * com JSON {"lat": ..., "lon": ...}. Se "alert": true, exibe overlay com "menssage".
      */
     private void checkRiskOnServer(double lat, double lon) {
-        String url = "https://copiloto.glitch.me/check-risk-area";
+        String url = "https://lumotech.com.br/check-risk-area";
 
         // Monta payload JSON
         JSONObject payload = new JSONObject();
